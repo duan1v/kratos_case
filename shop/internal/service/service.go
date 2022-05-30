@@ -1,0 +1,30 @@
+package service
+
+import (
+	v1 "shop/api/shop/v1"
+	"shop/internal/biz"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/wire"
+)
+
+// ProviderSet is service providers.
+var ProviderSet = wire.NewSet(NewShopService)
+
+// ShopService is a shop service.
+type ShopService struct {
+	v1.UnimplementedShopServer
+
+	uc *biz.UserUsecase
+	// ua  *biz.AddressUsecase
+	log *log.Helper
+}
+
+// NewShopService new a shop service.
+func NewShopService(uc *biz.UserUsecase, logger log.Logger) *ShopService {
+	return &ShopService{
+		uc: uc,
+		// ua:  ua,
+		log: log.NewHelper(log.With(logger, "module", "service/shop")),
+	}
+}
