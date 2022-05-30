@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 	v1 "user/api/user/v1"
+
+	pb "user/api/helloworld/v1"
 
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	grpcx "github.com/go-kratos/kratos/v2/transport/grpc"
@@ -21,7 +24,7 @@ var conn *grpc.ClientConn
 func main() {
 	Init()
 
-	TestCreateUser() // 创建用户
+	// TestCreateUser() // 创建用户
 
 	conn.Close()
 }
@@ -34,6 +37,7 @@ func Init() {
 	// 	panic("grpc link err" + err.Error())
 	// }
 	// userClient = v1.NewUserClient(conn)
+
 	c := consulAPI.DefaultConfig()
 	c.Address = "127.0.0.1:8500"
 	c.Scheme = "http"
@@ -44,7 +48,8 @@ func Init() {
 	r := consul.New(cli, consul.WithHealthCheck(false))
 	conn, err := grpcx.DialInsecure(
 		context.Background(),
-		grpcx.WithEndpoint("discovery:///shop.user.service"),
+		grpcx.WithEndpoint("127.0.0.1:50051"),
+		// 127.0.0.1:50051/helloworld
 		grpcx.WithDiscovery(r),
 		grpcx.WithTimeout(2*time.Second),
 		grpcx.WithOptions(grpc.WithStatsHandler(&tracing.ClientHandler{})),
@@ -52,7 +57,18 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
-	userClient = v1.NewUserClient(conn)
+	// userClient = v1.NewUserClient(conn)
+
+	cx := pb.NewGreeterClient(conn)
+	for {
+		ctx, _ := context.WithTimeout(context.Background(), time.Second)
+		rx, err := cx.SayHello(ctx, &pb.HelloRequest{Name: "efagrteyjr"})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Greeting: %s", rx.Message)
+		time.Sleep(time.Second * 2)
+	}
 }
 
 func TestCreateUser() {

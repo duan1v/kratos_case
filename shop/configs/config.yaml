@@ -21,6 +21,6 @@ auth:
   jwt_key: hqFr%3ddt32DGlSTOI5cO6@TH#fFwYnP$S
 service:
   user:
-    endpoint: discovery:///shop.user.service
+    endpoint: "127.0.0.1:50052"
   goods:
     endpoint: discovery:///shop.goods.service
